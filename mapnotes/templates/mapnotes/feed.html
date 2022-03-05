@@ -1,0 +1,12 @@
+<script src='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.js'></script>
+<link href='https://api.mapbox.com/mapbox-gl-js/v2.1.1/mapbox-gl.css' rel='stylesheet' />
+
+{% if latest_note_list %}
+    <ul>
+    {% for note in latest_note_list %}
+        <li>{{note.date}} --> {{note.creator}} wrote: {{note.body}}</li>
+    {% endfor %}
+    </ul>
+{% else %}
+    <p>No notes have been posted yet...</p>
+{% endif %}

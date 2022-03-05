@@ -1,0 +1,118 @@
+<!DOCTYPE html>
+<html>
+  <head>
+    <meta charset="utf-8" />
+    <title>Display a map on a webpage</title>
+    <meta
+      name="viewport"
+      content="initial-scale=1,maximum-scale=10,user-scalable=yes"
+    />
+    <link
+      href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css"
+      rel="stylesheet"
+    />
+    <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
+    <style>
+      body {
+        margin: 0;
+        padding: 0;
+      }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+      }
+      form {
+        position: absolute;
+        z-index: 5;
+        background-color: white;
+      }
+    </style>
+  </head>
+  <body>
+    <div id="map">
+      <form>
+        <label for="fname">First name:</label>
+        <input type="text" id="fname" name="fname" /><br /><br />
+        <label for="lname">Last name:</label>
+        <input type="text" id="lname" name="lname" /><br /><br />
+        <label for="note">Note:</label>
+        <input type="text" id="note" name="note" /><br /><br />
+        <input type="submit" value="Submit" />
+      </form>
+    </div>
+    <script>
+      mapboxgl.accessToken =
+        "pk.eyJ1IjoiamV0cGxhbmVqaiIsImEiOiJja3F2N2NkNXYwYm5tMnZtZmRoYWo2bTFkIn0.U-wRPuGZn0PixDOKKPxkLg";
+      const map = new mapboxgl.Map({
+        container: "map", // container ID
+        style: "mapbox://styles/mapbox/streets-v11", // style URL
+        center: [-15.5, 25.5], // starting position [lng, lat]
+        zoom: 3, // starting zoom
+      });
+
+      const canvas = map.getCanvasContainer();
+      const geojson = {
+        type: "FeatureCollection",
+        features: [
+          {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [0, 0],
+            },
+          },
+        ],
+      };
+
+      // create the popup
+      const popup = new mapboxgl.Popup({ offset: 25 }).setText(
+        "New Note: ________"
+      );
+
+      map.on("load", () => {
+        map.addSource("geojson", {
+          type: "geojson",
+          data: geojson,
+        });
+        map.addLayer({
+          id: "note-point",
+          type: "circle",
+          source: "geojson",
+          paint: {
+            "circle-radius": 5,
+            "circle-color": "#000",
+          },
+          filter: ["in", "$type", "Point"],
+        });
+
+        map.on("click", (e) => {
+          console.log(e);
+          if (geojson.features.length > 0) geojson.features.pop();
+          if (document.getElementsByClassName("mapboxgl-popup").length) {
+            popup[0].remove();
+          }
+          const point = {
+            type: "Feature",
+            geometry: {
+              type: "Point",
+              coordinates: [e.lngLat.lng, e.lngLat.lat],
+            },
+            properties: {
+              id: String(new Date().getTime()),
+            },
+          };
+
+          const popup = new mapboxgl.Popup({ closeOnClick: true })
+            .setLngLat(point.geometry.coordinates)
+            .setHTML("Create a Note here: ")
+            .addTo(map);
+
+          geojson.features.push(point);
+          map.getSource("geojson").setData(geojson);
+        });
+      });
+    </script>
+  </body>
+</html>
