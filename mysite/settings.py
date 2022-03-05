@@ -39,7 +39,7 @@ INSTALLED_APPS = [
     'django.contrib.sessions',
     'django.contrib.messages',
     'django.contrib.staticfiles',
-    'mapnotes.apps.MapnotesConfig'
+    'mapnotes.apps.MapnotesConfig',
     'whitenoise.runserver_nostatic',
 ]
 
