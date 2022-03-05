@@ -9,7 +9,8 @@ on the world map they would like the note to be attached to.
 # Quickstart
 Prerequisites: Python 3.9, Django (check with python -m django --version)
 
-To run the application locally, enter ``source ~/eb-virt/bin/activate`` to activate a virtual
+Run ``virtualenv ~/virt`` to create a python virtual environment.
+To run the application locally, enter ``source ~/virt/bin/activate`` to activate a virtual
 environment. Then, type: ``python3 manage.py runserver``. 
 - Type CTRL+C when you want to stop the local web server.
 - To change the server port, pass the number as cmdline arg: ``python3 manage.py runserver 8080``
