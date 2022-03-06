@@ -10,9 +10,11 @@ from mapnotes.models import User, Note
 
 
 def index(request):  # shows the map interface and notes pinned at locations
-    latest_note_list = Note.objects.order_by('-date')[:100]
+    # latest_note_list = Note.objects.order_by('-date')[:100]
+    latest_note_list = Note.objects.all()
     latest_note_list = serialize('json', latest_note_list, 
         fields=['id', 'creator', 'body', 'date', 'lat', 'lon', 'upvotes'])
+    # print(latest_note_list)
     return render(request, 'mapnotes/index.html', {'latest_note_list': latest_note_list})
 
 
@@ -49,9 +51,9 @@ def submit(request):  # response to user POSTing a note
                 u = User(display_name=request.POST['display_name'],
                          email=request.POST['email'], fname=request.POST['fname'],
                          lname=request.POST['lname'])
+                u.save()
             finally:
-                u.note_set.create(
-                    body=request.POST['note'], date=timezone.now(), 
+                u.note_set.create(body=request.POST['note'], date=timezone.now(), 
                     lat=request.POST['lat'], lon=request.POST['lon'])
                 next = request.POST.get('next', '/')
                 return HttpResponseRedirect(next)

@@ -64,8 +64,13 @@ Password - 1
 With the server started, navigate to .../admin/ to view admin login page.
 
 # Heroku 
+See: https://devcenter.heroku.com/categories/working-with-django 
 - ``heroku pg:psql`` to connect to heroku postgres locally via CLI. You must have
 the heroku CLI installed. 
 - ``heroku run python manage.py shell`` run python interactive on the live heroku server
 - ``heroku run python manage.py createsuperuser`` create a super user on live heroku server
 - ``git push heroku local-branch-name:main `` to push and deploy changes
+
+# Other very helpful sources
+- Parse JSON in script given a context: https://stackoverflow.com/questions/3345076django-parse-json-in-my-template-using-javascript
+- 

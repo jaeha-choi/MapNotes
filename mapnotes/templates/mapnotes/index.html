@@ -88,18 +88,14 @@
         ],
       };
 
-      // create the popup
-      const popup = new mapboxgl.Popup({ offset: 25 }).setText(
-        "New Note: ________"
-      );
-
       map.on("load", () => {
-        note_list = JSON.parse('{{latest_note_list|safe}}');
-        console.log(note_list)
+        var note_list = JSON.parse('{{latest_note_list|escapejs}}')
         for (let i = 0; i < note_list.length; i++) {
           fields = note_list[i].fields
           coord = [fields.lon, fields.lat]
-          const popup = new mapboxgl.Popup({ closeOnClick: true })
+          const otherNotesPopup = new mapboxgl.Popup({ 
+            closeOnClick: false, 
+            closeButton: false })
             .setLngLat(coord)
             .setHTML(fields.date + " --> " + fields.creator + " wrote: " + fields.body)
             .addTo(map);
@@ -109,20 +105,16 @@
           type: "geojson",
           data: geojson,
         });
-        map.addLayer({
-          id: "note-point",
-          type: "circle",
-          source: "geojson",
-          visibility: "none",
-          filter: ["in", "$type", "Point"],
-        });
+        // map.addLayer({
+        //   id: "note-point",
+        //   type: "circle",
+        //   source: "geojson",
+        //   visibility: "none",
+        //   filter: ["in", "$type", "Point"],
+        // });
 
         map.on("click", (e) => {
           console.log(e);
-          if (geojson.features.length > 0) geojson.features.pop();
-          if (document.getElementsByClassName("mapboxgl-popup").length) {
-            popup[0].remove();
-          }
           const point = {
             type: "Feature",
             geometry: {
@@ -133,17 +125,19 @@
               id: String(new Date().getTime()),
             },
           };
-
-          const popup = new mapboxgl.Popup({ closeOnClick: true })
+          const newNotePopup = new mapboxgl.Popup({ closeOnClick: true })
             .setLngLat(point.geometry.coordinates)
             .setHTML("Create a Note here: ")
             .addTo(map);
-
+          if (document.getElementsByClassName("mapboxgl-popup").length && newNotePopup[0]) {
+            newNotePopup[0].remove();
+          }
+          
           form = document.getElementById("submit-note-form");
           console.log(form.style.display);
           form.style.display = "block";
 
-          popup.on("close", (e) => {
+          newNotePopup.on("close", (e) => {
             form.style.display = "none";
           });
 
@@ -151,7 +145,6 @@
 
           document.getElementById("lat").value = e.lngLat.lat;
           document.getElementById("lon").value = e.lngLat.lng;
-          geojson.features.push(point);
         });
       });
     </script>
