@@ -1,8 +1,10 @@
 CSS 436 Cloud Computing Final Project 
 Members: Jay, Jaeha, Mehak, Duncan
 
+README created by: Jay Lin
+
 # Summary
-What: Django (Python-based framework) application that provides a map view of 
+What: This is a Django (Python-based framework) application that provides a map view of 
 notes saved around the world. Users can write and save notes, then select whichever location
 on the world map they would like the note to be attached to.
 
@@ -14,39 +16,42 @@ To run the application locally, enter ``source ~/virt/bin/activate`` to activate
 environment. Then, type: ``python3 manage.py runserver``. 
 - Type CTRL+C when you want to stop the local web server.
 - To change the server port, pass the number as cmdline arg: ``python3 manage.py runserver 8080``
-- How to deploy with Elastic Beanstalk: https://docs.aws.amazon.com/elasticbeanstalk/latest/dg/create-deploy-python-django.html 
 
 # Project Structure
 Below is a tree of the current project. Files of note have comments in parentheses next to their names.
+Files without comments you don't need to worry about on a basic level.
 
 frontend/
-|--.ebextensions/
-|   |--django.config (Elastic Beanstalk config, where to start application)
 |--mapnotes/ (houses our actual application)
-|   |--migrations/
+|   |--migrations/ (for migrating the data)
 |       |--__init__.py
-|   |--__init__.py
+|   |--templates/
+|       |--feed.html (list of all notes)
+|       |--index.html (main page showing the map)
+|       |--user.html (shows 1 specific user)
+|   |--__init__.py (declares mapnotes as a module)
 |   |--admin.py
-|   |--app.py
-|   |--models.py
+|   |--apps.py
+|   |--models.py (where we setup the database schema)
 |   |--tests.py
-|   |--views.py
+|   |--urls.py (specify app-specific URL locations)
+|   |--views.py (how the pages' UI look)
 |--mysite/ (configure project-wide settings)
 |   |--__init__.py
 |   |--asgi.py
 |   |--wsgi.py
-|   |--settings.py
-|   |--urls.py
+|   |--settings.py (application settings, modules, databases...etc)
+|   |--urls.py (specify project-wide URL locations)
 |   |--wsgi.py
 |--.gitignore
-|--db.sqlite3
 |--manage.py (command-line utility for administrative tasks)
 |--requirements.txt (specifies dependencies)
+|--staticfiles/
 
 # Database
 This application will be using PostgresQL (SQL or relational database).
 - If models have changed:
-  - Run ``python3 manage.py makemigrations mysite`` to tell Django that we changed up 
+  - Run ``python3 manage.py makemigrations mapnotes`` to tell Django that we changed up 
 our models in mapnotes/models.py (ex: need to create new tables).
   - ``python3 manage.py migrate`` to apply those changes.
   - Open interactive shell: ``python3 manage.py shell``
@@ -58,3 +63,9 @@ Username - jlin
 Password - 1
 With the server started, navigate to .../admin/ to view admin login page.
 
+# Heroku 
+- ``heroku pg:psql`` to connect to heroku postgres locally via CLI. You must have
+the heroku CLI installed. 
+- ``heroku run python manage.py shell`` run python interactive on the live heroku server
+- ``heroku run python manage.py createsuperuser`` create a super user on live heroku server
+- ``git push heroku local-branch-name:main `` to push and deploy changes

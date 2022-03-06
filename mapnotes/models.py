@@ -22,12 +22,13 @@ from django.db import models
 #     "lname" varchar(50) NOT NULL
 # );
 class User(models.Model): # id field is added automatically
+    display_name = models.CharField(max_length=80)
+    email = models.TextField(max_length=320)
     fname = models.CharField(max_length=50) # first name
     lname = models.CharField(max_length=50) # last name
 
     def __str__(self): # toString()
-        return ('{0} {1}'.format(self.fname, self.lname))
-
+        return ('User: {0}'.format(self.display_name))
 
 class Note(models.Model):
     # if user deleted, also delete their notes
@@ -37,8 +38,8 @@ class Note(models.Model):
 
     # Location of Note
     # Usage: import geocoder   g = geocoder.ip('me')   g.latlng
-    lat = models.DecimalField(max_digits=30, decimal_places=25, default=0.0)
-    lon = models.DecimalField(max_digits=30, decimal_places=25, default=0.0)
+    lat = models.DecimalField(max_digits=30, decimal_places=25)
+    lon = models.DecimalField(max_digits=30, decimal_places=25)
 
     upvotes = models.IntegerField(default=0) # ? optional
 
@@ -48,5 +49,7 @@ class Note(models.Model):
     # Returns true if note was published less than or equal to a day from now
     def was_published_recently(self):
         return self.pub_date >= timezone.now() - datetime.timedelta(days=1)
+
+
 
 

@@ -8,4 +8,5 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('feed', views.feed, name='feed'),
     path('user/<int:user_id>/', views.profile, name='profile'),
+    path('submit', views.submit, name='submit')
 ]
