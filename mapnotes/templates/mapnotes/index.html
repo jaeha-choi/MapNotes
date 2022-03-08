@@ -27,6 +27,13 @@
         position: absolute;
         z-index: 5;
         background-color: white;
+        width: 100%;
+        height: 50px;
+        justify-content: center; 
+        align-items: center;
+      }
+      input {
+        margin-right: 15px;
       }
     </style>
   </head>
@@ -36,25 +43,16 @@
         id="submit-note-form"
         method="POST"
         action="{% url 'submit' %}"
-        style="display: none"
+        style="display: none;"
       >
         {% csrf_token %}
         <input type="hidden" name="next" value="{{ request.path }}">
 
-        <label for="email">Email: </label>
-        <input required type="text" id="email" name="email" /><br /><br />
+        <label style="margin-left: 15px;" for="email">Email: </label>
+        <input required type="text" id="email" name="email" />
 
-        <label for="display_name">Name you'd like to post under: </label>
-        <input required type="text" id="display_name" name="display_name" /><br /><br />
-
-        <label for="fname">First name:</label>
-        <input required type="text" id="fname" name="fname" /><br /><br />
-
-        <label for="lname">Last name:</label>
-        <input required type="text" id="lname" name="lname" /><br /><br />
-
-        <label for="note">Note:</label>
-        <input required type="text" id="note" name="note" /><br /><br />
+        <label for="note">Note: </label>
+        <input required type="text" id="note" name="note" style="flex-grow: 70;" />
 
         <label for="lat">Latitude:</label> 
         <input required id="lat" name="lat" value="0" />
@@ -97,7 +95,7 @@
             closeOnClick: false, 
             closeButton: false })
             .setLngLat(coord)
-            .setHTML(fields.date + " --> " + fields.creator + " wrote: " + fields.body)
+            .setHTML(fields.date + " --> " + fields.body)
             .addTo(map);
         }
 
@@ -105,14 +103,7 @@
           type: "geojson",
           data: geojson,
         });
-        // map.addLayer({
-        //   id: "note-point",
-        //   type: "circle",
-        //   source: "geojson",
-        //   visibility: "none",
-        //   filter: ["in", "$type", "Point"],
-        // });
-
+        
         map.on("click", (e) => {
           console.log(e);
           const point = {
@@ -135,7 +126,7 @@
           
           form = document.getElementById("submit-note-form");
           console.log(form.style.display);
-          form.style.display = "block";
+          form.style.display = "flex";
 
           newNotePopup.on("close", (e) => {
             form.style.display = "none";
