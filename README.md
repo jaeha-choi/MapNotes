@@ -22,6 +22,7 @@ can write and save notes, then select whichever location on the world map they w
     - `venv` (or `virtualenv`): Python Virtual environment is recommended to prevent dependency conflicts.
       See [official document](https://docs.python.org/3/library/venv.html) for more information.
 - Packages in `requirements.txt`
+- setup.sh (to configure the secrets/env variables if testing locally)
 
 ## Quickstart
 
@@ -29,9 +30,9 @@ can write and save notes, then select whichever location on the world map they w
     - `git clone https://github.com/jaeha-choi/CSS436_Program_5 && cd CSS436_Program_5`
 2. (Optional) Create/Activate `venv`
     1. Create `venv` in current directory if you haven't already
-        - `python -m venv venv`
+        - `python -m venv venv` or `virtualenv ~/virt`
     2. Activate `venv`
-        - Linux/macOS (bash/zsh): `source venv/bin/activate`
+        - Linux/macOS (bash/zsh): `source venv/bin/activate` or `source ~/virt/bin/activate`
         - Windows (CMD): `venv\Scripts\activate.bat`
         - Windows (PS): `venv\Scripts\Activate.ps1`
     3. Verify `venv`
@@ -102,6 +103,13 @@ This application uses PostgreSQL (SQL or relational database).
     - `python manage.py migrate` to apply those changes.
     - Open interactive shell: `python manage.py shell`
     - See [Django tutorial](https://docs.djangoproject.com/en/4.0/intro/tutorial02/) for more details.
+- To connect to Azure PostgreSQL CLI
+  - Install azure-cli via command line (ex: `brew install azure-cli`)
+  - Login with your account using `az login`
+  - Type: `az postgres flexible-server connect -n postgresdemoserver -u dbuser -p "dbpassword" -d flexibleserverdb --interactive` Source: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/connect-azure-cli
+    - This will start an interactive session in the Azure PostgreSQL server
+  - DROP DATABASE notes; CREATE DATABASE notes;
+  - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
 
 ## Miscellaneous
 
