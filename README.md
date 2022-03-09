@@ -51,7 +51,9 @@ can write and save notes, then select whichever location on the world map they w
     # Django
     PROG_5_DJANGO_SECRET_KEY=<secret_key>
      ```
-5. Run server
+5. Create database if you haven't
+    - `createdb -h <host> -U <user> <db_name>`
+6. Run server
     - Use default settings: `python manage.py runserver`
     - Use `0.0.0.0` as host and `8080` as port: `python manage.py runserver 0.0.0.0:8080`
 
@@ -103,13 +105,19 @@ This application uses PostgreSQL (SQL or relational database).
     - `python manage.py migrate` to apply those changes.
     - Open interactive shell: `python manage.py shell`
     - See [Django tutorial](https://docs.djangoproject.com/en/4.0/intro/tutorial02/) for more details.
-- To connect to Azure PostgreSQL CLI
-  - Install azure-cli via command line (ex: `brew install azure-cli`)
-  - Login with your account using `az login`
-  - Type: `az postgres flexible-server connect -n postgresdemoserver -u dbuser -p "dbpassword" -d flexibleserverdb --interactive` Source: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/connect-azure-cli
-    - This will start an interactive session in the Azure PostgreSQL server
-  - DROP DATABASE notes; CREATE DATABASE notes;
-  - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
+- Connecting to PostgreSQL CLI
+    - Using `psql`
+        - Default settings: `psql -h <host> -U <username> [db_name]`
+        - With port specified: `psql -h <host> -p <port> -U <username> [db_name]`
+    - Using Azure CLI
+        - Install azure-cli via command line (ex: `brew install azure-cli`)
+        - Login with your account using `az login`
+        -
+        Type: `az postgres flexible-server connect -n postgresdemoserver -u dbuser -p "dbpassword" -d flexibleserverdb --interactive`
+        Source: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/connect-azure-cli
+            - This will start an interactive session in the Azure PostgreSQL server
+        - DROP DATABASE notes; CREATE DATABASE notes;
+        - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
 
 ## Miscellaneous
 
