@@ -8,5 +8,7 @@ urlpatterns = [
     path('', views.index, name='index'),
     path('feed', views.feed, name='feed'),
     path('user/<int:user_id>/', views.profile, name='profile'),
-    path('submit', views.submit, name='submit')
+    path('submit', views.submit, name='submit'),
+    path("login", views.login_request, name="login"),
+    path("logout", views.logout_request, name="logout")
 ]
