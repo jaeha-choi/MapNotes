@@ -42,6 +42,8 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', ]
 
+CSRF_TRUSTED_ORIGINS = ["css436-prog5.azurewebsites.net", "prog5.azurewebsites.net"]
+
 # Application definition
 
 INSTALLED_APPS = [
@@ -66,7 +68,7 @@ SITE_ID = 1
 # Redirects to homepage on sucessful login
 LOGIN_REDIRECT_URL = "/"
 
-LOGOUT_REDIRECT_URL = '/' # new
+LOGOUT_REDIRECT_URL = '/'  # new
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -103,7 +105,7 @@ WSGI_APPLICATION = 'mysite.wsgi.application'
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = { # postgres
+DATABASES = {  # postgres
     'default': {
         'ENGINE': 'django.db.backends.postgresql',
         'HOST': os.getenv("PROJ_5_DB_HOST"),
@@ -114,7 +116,7 @@ DATABASES = { # postgres
 }
 
 AUTHENTICATION_BACKENDS = [
-    
+
     # Needed to login by username in Django admin, regardless of `allauth`
     'django.contrib.auth.backends.ModelBackend',
 
