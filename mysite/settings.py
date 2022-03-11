@@ -12,24 +12,35 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 
 import os
 from pathlib import Path
-import django_heroku
-import dj_database_url
+
+REQUIRED_ENV_VAR = ["PROJ_5_DB_HOST", "PROJ_5_DB_USERNAME", "PROJ_5_DB_PASSWORD", "PROJ_5_DB_NAME",
+                    "PROG_5_DJANGO_SECRET_KEY"]
+# Check if all required env var is set
+for e in REQUIRED_ENV_VAR:
+    if not os.getenv(e):
+        raise ValueError(e + " is not set")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
+
+# TODO: Update the url to a variable
+# STATIC_ROOT = "https://prog5.blob.core.windows.net/prog5staticfiles/prog5/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = 'static/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = 'django-insecure-lx_&gm04mrs$((+8v=(j+nqsun$i2j7iw&-w_y@rcneghrb#3@'
+SECRET_KEY = os.getenv('PROG_5_DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
 
-ALLOWED_HOSTS = ['*',]
-
+ALLOWED_HOSTS = ['*', ]
 
 # Application definition
 
@@ -42,7 +53,20 @@ INSTALLED_APPS = [
     'django.contrib.staticfiles',
     'mapnotes.apps.MapnotesConfig',
     'whitenoise.runserver_nostatic',
+
+    'django.contrib.sites',
+    'allauth',
+    'allauth.account',
+    'allauth.socialaccount',
+    'allauth.socialaccount.providers.google',
 ]
+
+SITE_ID = 1
+
+# Redirects to homepage on sucessful login
+LOGIN_REDIRECT_URL = "/"
+
+LOGOUT_REDIRECT_URL = '/' # new
 
 MIDDLEWARE = [
     'django.middleware.security.SecurityMiddleware',
@@ -61,7 +85,7 @@ ROOT_URLCONF = 'mysite.urls'
 TEMPLATES = [
     {
         'BACKEND': 'django.template.backends.django.DjangoTemplates',
-        'DIRS': [],
+        'DIRS': [os.path.join(BASE_DIR, 'templates')],
         'APP_DIRS': True,
         'OPTIONS': {
             'context_processors': [
@@ -76,25 +100,27 @@ TEMPLATES = [
 
 WSGI_APPLICATION = 'mysite.wsgi.application'
 
-
 # Database
 # https://docs.djangoproject.com/en/4.0/ref/settings/#databases
 
-DATABASES = {
+DATABASES = { # postgres
     'default': {
-        'ENGINE': 'django.db.backends.sqlite3',
-        'NAME': os.path.join(BASE_DIR, 'db.sqlite3'), # sqlite3 specific
-
-        # postgres specific
-        'USER': 'readwrite', 
-        'HOST': '',
-        'PASSWORD': '',
-        'NAME': 'notes',
+        'ENGINE': 'django.db.backends.postgresql',
+        'HOST': os.getenv("PROJ_5_DB_HOST"),
+        'USER': os.getenv("PROJ_5_DB_USERNAME"),
+        'PASSWORD': os.getenv("PROJ_5_DB_PASSWORD"),
+        'NAME': os.getenv("PROJ_5_DB_NAME"),
     }
 }
-db_from_env = dj_database_url.config(conn_max_age=600)
-DATABASES['default'].update(db_from_env)
 
+AUTHENTICATION_BACKENDS = [
+    
+    # Needed to login by username in Django admin, regardless of `allauth`
+    'django.contrib.auth.backends.ModelBackend',
+
+    # `allauth` specific authentication methods, such as login by e-mail
+    'allauth.account.auth_backends.AuthenticationBackend',
+]
 
 # Password validation
 # https://docs.djangoproject.com/en/4.0/ref/settings/#auth-password-validators
@@ -114,7 +140,6 @@ AUTH_PASSWORD_VALIDATORS = [
     },
 ]
 
-
 # Internationalization
 # https://docs.djangoproject.com/en/4.0/topics/i18n/
 
@@ -126,15 +151,7 @@ USE_I18N = True
 
 USE_TZ = True
 
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-
-STATIC_URL = 'static/'
-
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = 'django.db.models.BigAutoField'
-
-django_heroku.settings(locals(), )

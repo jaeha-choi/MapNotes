@@ -1,3 +1,4 @@
+.idea
 
 ### JetBrains template
 # Covers JetBrains IDEs: IntelliJ, RubyMine, PhpStorm, AppCode, PyCharm, CLion, Android Studio, WebStorm and Rider
@@ -646,3 +647,7 @@ cython_debug/
 .DS_Store
 docker-compose.yml
 notes
+*.pyc
+setup.sh
+setup_test.sh
+setup_prod.sh
