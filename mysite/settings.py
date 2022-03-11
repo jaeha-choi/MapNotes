@@ -63,7 +63,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 1
+SITE_ID = 2
 
 # Redirects to homepage on sucessful login
 LOGIN_REDIRECT_URL = "/"
