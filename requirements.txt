@@ -1,6 +1,7 @@
 asgiref~=3.5.0
 certifi~=2021.10.8
 Django~=4.0.3
+django-allauth~=0.49.0
 psycopg2~=2.9.3
 sqlparse~=0.4.2
 whitenoise~=6.0.0

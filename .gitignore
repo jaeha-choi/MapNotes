@@ -649,3 +649,5 @@ docker-compose.yml
 notes
 *.pyc
 setup.sh
+setup_test.sh
+setup_prod.sh

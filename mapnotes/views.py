@@ -6,6 +6,7 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.core.serializers import serialize
 from django.template import loader
 from mapnotes.models import User, Note
+from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
 
 # Create your views here.
 
@@ -56,3 +57,15 @@ def submit(request):  # response to user POSTing a note
             return HttpResponseRedirect(next)
     else:
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
+
+def login_request(request): # process the login request
+        form = AuthenticationForm()
+        return render(request = request,
+                    template_name = "account/login.html",
+                    context={"form":form})
+
+def logout_request(request): # process the logout request
+        form = AuthenticationForm()
+        return render(request = request,
+                    template_name = "account/logout.html",
+                    context={"form":form})

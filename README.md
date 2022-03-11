@@ -95,6 +95,12 @@ CSS436_Program_5
 └── requirements.txt
 ```
 
+## Static files
+Django static files include images, CSS, and Javascript files. For easy deployment,
+they can be gathered into a single directory (project-wide) so they can be easily served.
+To do this and generate a staticfiles folder, specify STATIC_ROOT = "some_path" in settings.py,
+then run `python3 manage.py collectstatic`.
+
 ## Database Management
 
 This application uses PostgreSQL (SQL or relational database).
