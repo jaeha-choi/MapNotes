@@ -13,8 +13,23 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
+REQUIRED_ENV_VAR = ["PROJ_5_DB_HOST", "PROJ_5_DB_USERNAME", "PROJ_5_DB_PASSWORD", "PROJ_5_DB_NAME",
+                    "PROG_5_DJANGO_SECRET_KEY"]
+# Check if all required env var is set
+for e in REQUIRED_ENV_VAR:
+    if not os.getenv(e):
+        raise ValueError(e + " is not set")
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
+
+# Static files (CSS, JavaScript, Images)
+# https://docs.djangoproject.com/en/4.0/howto/static-files/
+
+# TODO: Update the url to a variable
+# STATIC_ROOT = "https://prog5.blob.core.windows.net/prog5staticfiles/prog5/staticfiles/"
+STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
+STATIC_URL = 'static/'
 
 # Quick-start development settings - unsuitable for production
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
@@ -135,11 +150,6 @@ TIME_ZONE = 'UTC'
 USE_I18N = True
 
 USE_TZ = True
-
-# Static files (CSS, JavaScript, Images)
-# https://docs.djangoproject.com/en/4.0/howto/static-files/
-STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
-STATIC_URL = 'static/'
 
 # Default primary key field type
 # https://docs.djangoproject.com/en/4.0/ref/settings/#default-auto-field
