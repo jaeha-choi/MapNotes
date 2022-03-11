@@ -42,7 +42,7 @@ DEBUG = True
 
 ALLOWED_HOSTS = ['*', ]
 
-CSRF_TRUSTED_ORIGINS = ["css436-prog5.azurewebsites.net", "prog5.azurewebsites.net"]
+CSRF_TRUSTED_ORIGINS = ["https://css436-prog5.azurewebsites.net", "https://prog5.azurewebsites.net"]
 
 # Application definition
 
