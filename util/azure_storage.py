@@ -16,4 +16,4 @@ def get_container_client(storage_url: str, storage_cred_key: str, container_name
     for b in c.list_containers():
         if b.name == container_name:
             return c.get_container_client(container_name)
-    return c.create_container(container_name)
+    return c.create_container(container_name, public_access="blob")

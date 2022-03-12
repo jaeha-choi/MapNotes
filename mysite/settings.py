@@ -13,13 +13,12 @@ https://docs.djangoproject.com/en/4.0/ref/settings/
 import os
 from pathlib import Path
 
-REQUIRED_ENV_VAR = ["PROJ_5_DB_HOST", "PROJ_5_DB_USERNAME", "PROJ_5_DB_PASSWORD", "PROJ_5_DB_NAME",
-                    "PROJ_5_DJANGO_SECRET_KEY", "PROJ_5_TAKEOUT_DIRECTORY", "PROJ_5_STORAGE_URL",
-                    "PROJ_5_STORAGE_CREDENTIAL_KEY", "PROJ_5_STORAGE_CONTAINER_NAME"]
-# Check if all required env var is set
-for e in REQUIRED_ENV_VAR:
-    if not os.getenv(e):
-        raise ValueError(e + " is not set")
+from util.check import env_var_check
+
+env_var_check()
+
+DJANGO_SUPERUSER_EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
+DJANGO_SUPERUSER_USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
 
 PROJ_5_TAKEOUT_DIRECTORY = os.getenv("PROJ_5_TAKEOUT_DIRECTORY")
 PROJ_5_STORAGE_URL = os.getenv("PROJ_5_STORAGE_URL")
