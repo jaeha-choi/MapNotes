@@ -1,16 +1,18 @@
-from datetime import timezone
 import datetime
 import uuid
+from datetime import timezone
+
 from django.db import models
-from django.contrib.auth.hashers import make_password
+
 
 class User(models.Model):  # id field is added automatically
     _id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    email = models.TextField(max_length=320)
+    name = models.CharField(max_length=60)
+    email = models.TextField(max_length=320, default="")
 
     def __str__(self):  # toString()
-        return ('User: {0}'.format(self.email))
+        return (self.name + " (" + self.email + ")")
 
 
 class Map(models.Model):
@@ -28,6 +30,7 @@ class Map(models.Model):
 class Note(models.Model):
     _id = models.UUIDField(
         primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    creator = models.ForeignKey(User, on_delete=models.CASCADE)
     map_container = models.ForeignKey(Map, on_delete=models.CASCADE)
 
     body = models.TextField(max_length=500)
@@ -38,8 +41,14 @@ class Note(models.Model):
     lon = models.DecimalField(max_digits=30, decimal_places=25)
 
     def __str__(self):
-        return ("|{0}| Note in {0}: {1}. {2} upvotes".format(self.date, 
-            self.map_container, self.body, self.upvotes))
+        return ("|{0}| {1} wrote in map {2}: \'{3}\'. +{4} votes".format(self.date, self.creator,
+                                                                         self.map_container, self.body, self.upvotes))
+
+    def get_creator_name(self):
+        return self.creator.name
+
+    def get_creator_email(self):
+        return self.creator.email
 
     # Returns true if note was published less than or equal to a day from now
     def was_published_recently(self):

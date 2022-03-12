@@ -13,15 +13,12 @@ from util.azure_storage import get_container_client
 from util.binfile import BinFile
 
 
-# Create your views here.
-
 def index(request):  # shows the map interface and notes pinned at locations
-    # latest_note_list = Note.objects.order_by('-date')[:100]
-    latest_note_list = Note.objects.all()
-    latest_note_list = serialize('json', latest_note_list,
-                                 fields=['id', 'creator', 'body', 'date', 'lat', 'lon', 'upvotes'])
-    # print(latest_note_list)
-    return render(request, 'mapnotes/index.html', {'latest_note_list': latest_note_list})
+    # notes = (User.objects.raw("SELECT * FROM mapnotes_note " +
+    #     "INNER JOIN mapnotes_user ON (mapnotes_note.creator_id = mapnotes_user._id);"))
+    notes = Note.objects.order_by('-date')[:100]
+    notes = serialize('json', notes)
+    return render(request, 'mapnotes/index.html', {'latest_note_list': notes})
 
 
 def feed(request):  # shows the 100 latest notes ordered by publication date
@@ -55,11 +52,13 @@ def submit(request):  # response to user POSTing a note
             u = User(email=request.POST['email'])
             u.save()
         finally:
-            m = u.map_set.create(name='Some random map Here', description='Some Map Here')
-            m.note_set.create(body=request.POST['note'], date=timezone.now(),
+            m = u.map_set.create(
+                name='Public Map', description='This map is visible to the world')
+            m.note_set.create(body=request.POST['note'], date=timezone.now(), creator_id=u._id,
                               lat=request.POST['lat'], lon=request.POST['lon'])
             next_ = request.POST.get('next', '/')
             return HttpResponseRedirect(next_)
+
     else:
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
