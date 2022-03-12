@@ -6,17 +6,15 @@ from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonRespons
 from django.core.serializers import serialize
 from django.template import loader
 from mapnotes.models import User, Note
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
-
-# Create your views here.
+from django.contrib.auth.forms import AuthenticationForm
+from django.db.models import F
 
 def index(request):  # shows the map interface and notes pinned at locations
-    # latest_note_list = Note.objects.order_by('-date')[:100]
-    latest_note_list = Note.objects.all()
-    latest_note_list = serialize('json', latest_note_list, 
-        fields=['id', 'creator', 'body', 'date', 'lat', 'lon', 'upvotes'])
-    # print(latest_note_list)
-    return render(request, 'mapnotes/index.html', {'latest_note_list': latest_note_list})
+    # notes = (User.objects.raw("SELECT * FROM mapnotes_note " + 
+    #     "INNER JOIN mapnotes_user ON (mapnotes_note.creator_id = mapnotes_user._id);"))
+    notes = Note.objects.order_by('-date')[:100]
+    notes = serialize('json', notes)
+    return render(request, 'mapnotes/index.html', {'latest_note_list': notes})
 
 
 def feed(request):  # shows the 100 latest notes ordered by publication date
@@ -50,22 +48,25 @@ def submit(request):  # response to user POSTing a note
             u = User(email=request.POST['email'])
             u.save()
         finally:
-            m = u.map_set.create(name='Some random map Here', description='Some Map Here')
-            m.note_set.create(body=request.POST['note'], date=timezone.now(), 
-                lat=request.POST['lat'], lon=request.POST['lon'])
+            m = u.map_set.create(
+                name='Public Map', description='This map is visible to the world')
+            m.note_set.create(body=request.POST['note'], date=timezone.now(), creator_id=u._id,
+                              lat=request.POST['lat'], lon=request.POST['lon'])
             next = request.POST.get('next', '/')
             return HttpResponseRedirect(next)
     else:
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
-def login_request(request): # process the login request
-        form = AuthenticationForm()
-        return render(request = request,
-                    template_name = "account/login.html",
-                    context={"form":form})
 
-def logout_request(request): # process the logout request
-        form = AuthenticationForm()
-        return render(request = request,
-                    template_name = "account/logout.html",
-                    context={"form":form})
+def login_request(request):  # process the login request
+    form = AuthenticationForm()
+    return render(request=request,
+                  template_name="account/login.html",
+                  context={"form": form})
+
+
+def logout_request(request):  # process the logout request
+    form = AuthenticationForm()
+    return render(request=request,
+                  template_name="account/logout.html",
+                  context={"form": form})
