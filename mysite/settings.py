@@ -17,13 +17,14 @@ from util.check import env_var_check
 
 env_var_check()
 
+PROJ_5_STORAGE_CONTAINER_NAME = "prog5"
+PROJ_5_TAKEOUT_DIRECTORY = "takeout"
+
 DJANGO_SUPERUSER_EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
 DJANGO_SUPERUSER_USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
 
-PROJ_5_TAKEOUT_DIRECTORY = os.getenv("PROJ_5_TAKEOUT_DIRECTORY")
 PROJ_5_STORAGE_URL = os.getenv("PROJ_5_STORAGE_URL")
 PROJ_5_STORAGE_CREDENTIAL_KEY = os.getenv("PROJ_5_STORAGE_CREDENTIAL_KEY")
-PROJ_5_STORAGE_CONTAINER_NAME = os.getenv("PROJ_5_STORAGE_CONTAINER_NAME")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
