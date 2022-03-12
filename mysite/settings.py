@@ -14,11 +14,17 @@ import os
 from pathlib import Path
 
 REQUIRED_ENV_VAR = ["PROJ_5_DB_HOST", "PROJ_5_DB_USERNAME", "PROJ_5_DB_PASSWORD", "PROJ_5_DB_NAME",
-                    "PROG_5_DJANGO_SECRET_KEY"]
+                    "PROJ_5_DJANGO_SECRET_KEY", "PROJ_5_TAKEOUT_DIRECTORY", "PROJ_5_STORAGE_URL",
+                    "PROJ_5_STORAGE_CREDENTIAL_KEY", "PROJ_5_STORAGE_CONTAINER_NAME"]
 # Check if all required env var is set
 for e in REQUIRED_ENV_VAR:
     if not os.getenv(e):
         raise ValueError(e + " is not set")
+
+PROJ_5_TAKEOUT_DIRECTORY = os.getenv("PROJ_5_TAKEOUT_DIRECTORY")
+PROJ_5_STORAGE_URL = os.getenv("PROJ_5_STORAGE_URL")
+PROJ_5_STORAGE_CREDENTIAL_KEY = os.getenv("PROJ_5_STORAGE_CREDENTIAL_KEY")
+PROJ_5_STORAGE_CONTAINER_NAME = os.getenv("PROJ_5_STORAGE_CONTAINER_NAME")
 
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
@@ -35,7 +41,7 @@ STATIC_URL = 'static/'
 # See https://docs.djangoproject.com/en/4.0/howto/deployment/checklist/
 
 # SECURITY WARNING: keep the secret key used in production secret!
-SECRET_KEY = os.getenv('PROG_5_DJANGO_SECRET_KEY')
+SECRET_KEY = os.getenv('PROJ_5_DJANGO_SECRET_KEY')
 
 # SECURITY WARNING: don't run with debug turned on in production!
 DEBUG = True
