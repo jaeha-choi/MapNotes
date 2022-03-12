@@ -1,5 +1,12 @@
 #!/bin/bash
-python manage.py createsuperuser --noinput
+set -e
+
+# Environment variable check
+python ./util/check.py
+# makemigrate should be commented out once we start deploying the app
 python manage.py makemigrations mapnotes
 python manage.py migrate
+python manage.py createsuperuser --noinput || true
+python manage.py init
+
 python manage.py runserver 0.0.0.0:8080
