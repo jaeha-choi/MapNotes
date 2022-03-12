@@ -45,9 +45,9 @@ def submit(request):  # response to user POSTing a note
         print(form)
         u = None
         try:
-            u = User.objects.get(email=request.POST['email'])
+            u = User.objects.get(_id=request.POST['_id'])
         except User.DoesNotExist:  # create a new user entry
-            u = User(email=request.POST['email'])
+            u = User(_id=request.POST['_id'])
             u.save()
         finally:
             m = u.map_set.create(name='Some random map Here', description='Some Map Here')

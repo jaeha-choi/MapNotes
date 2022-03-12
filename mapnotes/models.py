@@ -4,13 +4,9 @@ import uuid
 from django.db import models
 from django.contrib.auth.hashers import make_password
 
-class User(models.Model):  # id field is added automatically
-    _id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
-    email = models.TextField(max_length=320)
-
-    def __str__(self):  # toString()
-        return ('User: {0}'.format(self.email))
+class User(models.Model):  # _id = stores the social uid of the current user 
+    
+    _id = models.TextField(primary_key=True, max_length=320)
 
 
 class Map(models.Model):
