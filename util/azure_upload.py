@@ -84,7 +84,7 @@ class AzureUpload:
         self._read_local_helper(path, dirs[-1], curr, follow)
         return n, curr.subdir[dirs[-1]], path
 
-    def _read_server(self, path: str) -> (_Node, _Node, str):
+    def _read_server(self, path: str, insecure: bool = False) -> (_Node, _Node, str):
         found = False
         for b in self._container.list_blobs():
             found = b.name == self._p_file
@@ -102,7 +102,14 @@ class AzureUpload:
                 b = tmp.read()
             sig = hmac.new(self._secret_key, b, self._sig_hash_func)
             if not hmac.compare_digest(file_sig, sig.digest()):
-                raise AssertionError("index file signature mismatch")
+                if insecure:
+                    print("#######################################")
+                    print("#### Index file signature mismatch ####")
+                    print("#######################################")
+                    print("Index file is breached or signature is updated locally")
+                    print("--insecure flag detected; Continuing...")
+                else:
+                    raise AssertionError("index file signature mismatch")
             new = pickle.loads(b)
 
         curr = new
@@ -148,16 +155,16 @@ class AzureUpload:
     def restore(self, local_path: str, remote_path: str, overwrite: bool = False) -> None:
         """
         Restore contents in container to specified local directory.
+
         :param local_path: Local path to restore to. Can be absolute or relative path.
                             Creates new directory if it doesn't exist.
         :param remote_path: Path to save to in container. No-op if remote-path not found.
         :param overwrite: Whether to overwrite files on the local machine even if the hash matches. (per spec)
         :return: None
-        :raise:
-            AssertionError: If index file signature does not match local signature
+        :raise AssertionError: If index file signature does not match local signature
         """
-        _, local_cd, local_full_path = self._read_local(local_path, False)
-        _, remote_cd, remote_full_path = self._read_server(remote_path)
+        _, local_cd, local_full_path = self._read_local(local_path, follow=False)
+        _, remote_cd, remote_full_path = self._read_server(remote_path, insecure=False)
 
         print("----- Remote directory tree -----\n" + str(remote_cd) + "---------------------------------")
 
@@ -191,24 +198,26 @@ class AzureUpload:
 
         return cnt
 
-    def backup(self, local_path: str, remote_path: str, follow: bool = False, overwrite: bool = True) -> None:
+    def backup(self, local_path: str, remote_path: str, follow: bool = False, overwrite: bool = True,
+               insecure: bool = False) -> None:
         """
         Performs a backup and upload it to container.
+
         :param local_path: Local path to back up. Can be absolute or relative path.
         :param remote_path: Path to save to in container. Creates directories if not found.
         :param follow: Whether to follow the symlinks. WARNING: This function does NOT detect cycles.
         :param overwrite: overwrite existing file
+        :param insecure: If set to true, continue even when the validation fails
         :return: None
-        :raise:
-            ValueError: If local_path is not a valid directory
-            AssertionError: If index file signature does not match local signature
+        :raise ValueError: If local_path is not a valid directory
+        :raise AssertionError: If index file signature does not match local signature
         """
         if not os.path.isdir(local_path):
             raise ValueError("%s is not a directory" % local_path)
-        local_full_struct, local_cd, local_full_path = self._read_local(local_path, follow)
-        remote_full_struct, remote_cd, remote_full_path = self._read_server(remote_path)
+        local_full_struct, local_cd, local_full_path = self._read_local(local_path, follow=follow)
+        remote_full_struct, remote_cd, remote_full_path = self._read_server(remote_path, insecure=insecure)
 
-        print("----- Local directory tree -----\n" + str(local_cd) + "--------------------------------")
+        # print("----- Local directory tree -----\n" + str(local_cd) + "--------------------------------")
 
         processed = self._backup_helper(local_full_path, remote_full_path, local_cd, remote_cd, overwrite)
 
@@ -223,6 +232,26 @@ class AzureUpload:
         print("Uploaded %d files + 1 index file" % processed)
 
 
+def get_secret(filename: str = "secret.key") -> bytes:
+    """
+    Read or create secret key for signatures
+
+    :param filename: Name of a file containing secret key
+    :return: Secret key in bytes
+    """
+    if os.path.isfile(filename):
+        print("Using existing key")
+        with open(filename, "rb") as s:
+            k = s.read()
+    else:
+        print("Creating new keys")
+        k = secrets.token_hex(64).encode()
+        with open(filename, "wb") as s:
+            s.write(k)
+    os.chmod(filename, stat.S_IRUSR | stat.S_IWUSR)  # chmod 600
+    return k
+
+
 if __name__ == '__main__':
     if len(sys.argv) != 4:
         print("You must pass in exactly 3 arguments")
@@ -234,21 +263,12 @@ if __name__ == '__main__':
     try:
         local, remote_dir = sys.argv[2], sys.argv[3]
 
-        s_name = os.getenv("PROG_5_STORAGE_URL")
+        s_name = os.getenv("PROJ_5_STORAGE_URL")
         s_key = os.getenv("PROJ_5_STORAGE_CREDENTIAL_KEY")
 
-        if os.path.isfile("secret.key"):
-            print("Using existing key")
-            with open("secret.key", "rb") as s:
-                key = s.read()
-        else:
-            print("Creating new keys")
-            key = secrets.token_hex(64).encode()
-            with open("secret.key", "wb") as s:
-                s.write(key)
-        os.chmod("secret.key", stat.S_IRUSR | stat.S_IWUSR)  # chmod 600
+        key = get_secret()
 
-        auto = AzureUpload(s_name, os.getenv("PROJ_5_STORAGE_CONTAINER_NAME"), s_key, key)
+        auto = AzureUpload(s_name, "prog5", s_key, key)
         if sys.argv[1].lower() == "backup":
             auto.backup(local_path=local, remote_path=remote_dir, overwrite=False)
         elif sys.argv[1].lower() == "restore":

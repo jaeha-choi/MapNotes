@@ -17,7 +17,14 @@ from util.check import env_var_check
 
 env_var_check()
 
+# Name of the container where staticfiles are saved
+# Default access level is "private" unless
+# PROJ_5_STORAGE_CONTAINER_NAME == PROJ_5_STORAGE_DATA_TAKEOUT_CONTAINER_NAME,
+# which sets the public access to "blob" on container creation.
 PROJ_5_STORAGE_CONTAINER_NAME = "prog5"
+# Name of the container where data takeout json files are stored.
+# Default access level is "blob"
+PROJ_5_STORAGE_DATA_TAKEOUT_CONTAINER_NAME = "prog5"
 PROJ_5_TAKEOUT_DIRECTORY = "takeout"
 
 DJANGO_SUPERUSER_EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
@@ -32,8 +39,7 @@ BASE_DIR = Path(__file__).resolve().parent.parent
 # Static files (CSS, JavaScript, Images)
 # https://docs.djangoproject.com/en/4.0/howto/static-files/
 
-# TODO: Update the url to a variable
-# STATIC_ROOT = "https://prog5.blob.core.windows.net/prog5staticfiles/prog5/staticfiles/"
+# STATIC_ROOT = PROJ_5_STORAGE_URL + "/" + PROJ_5_STORAGE_CONTAINER_NAME + "/prog5/staticfiles/"
 STATIC_ROOT = os.path.join(BASE_DIR, 'staticfiles')
 STATIC_URL = 'static/'
 

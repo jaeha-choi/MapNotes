@@ -21,7 +21,7 @@ def data_takeout_backend(map_id: str, creator_id: str = "") -> (bool, str):
     # Grab settings
     storage_url = settings.PROJ_5_STORAGE_URL
     storage_cred_key = settings.PROJ_5_STORAGE_CREDENTIAL_KEY
-    container_name = settings.PROJ_5_STORAGE_CONTAINER_NAME
+    container_name = settings.PROJ_5_STORAGE_DATA_TAKEOUT_CONTAINER_NAME
     takeout_dir = settings.PROJ_5_TAKEOUT_DIRECTORY
 
     try:
