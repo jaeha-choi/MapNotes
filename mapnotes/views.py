@@ -46,9 +46,9 @@ def submit(request):  # response to user POSTing a note
         u = None
         # TODO: user can be created right after login now
         try:
-            u = User.objects.get(email=request.POST['email'])
+            u = User.objects.get(_id=request.POST['_id'])
         except User.DoesNotExist:  # create a new user entry
-            u = User(email=request.POST['email'])
+            u = User(_id=request.POST['_id'])
             u.save()
         finally:
             try:
