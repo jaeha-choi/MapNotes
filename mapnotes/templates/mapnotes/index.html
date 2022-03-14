@@ -1,228 +1,335 @@
 <!DOCTYPE html>
 <html>
-<head>
-    <meta charset="utf-8"/>
-    <title>Display a map on a webpage</title>
+  <head>
+    <meta charset="utf-8" />
+    <title>CSS 436 Program 5</title>
     <meta
-            name="viewport"
-            content="initial-scale=1,maximum-scale=10,user-scalable=yes"
+      name="viewport"
+      content="initial-scale=1,maximum-scale=10,user-scalable=yes"
     />
     <link
-            href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css"
-            rel="stylesheet"
+      href="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.css"
+      rel="stylesheet"
     />
     <script src="https://api.mapbox.com/mapbox-gl-js/v2.7.0/mapbox-gl.js"></script>
     <style>
-        body,
-        html {
-            margin: 0;
-            padding: 0;
-            height: 100%;
-        }
+      body,
+      html {
+        margin: 0;
+        padding: 0;
+        height: 100%;
+      }
 
-        #map {
-            position: absolute;
-            top: 0;
-            bottom: 0;
-            width: 100%;
-            height: 100%;
-        }
+      #map {
+        position: absolute;
+        top: 0;
+        bottom: 0;
+        width: 100%;
+        height: 100%;
+      }
 
-        form {
-            position: absolute;
-            bottom: 0px;
-            z-index: 5;
-            background-color: white;
-            width: 100%;
-            height: 50px;
-            justify-content: center;
-            align-items: center;
-        }
+      #weather {
+        position: absolute;
+        right: 0;
+        top: 50%;
+        z-index: 5;
+        padding: 10px;
+        justify-content: center;
+        align-items: center;
+        background-color: white;
+      }
 
-        input {
-            margin-right: 15px;
-        }
+      form {
+        position: absolute;
+        bottom: 0px;
+        z-index: 5;
+        background-color: white;
+        width: 100%;
+        height: 50px;
+        justify-content: center;
+        align-items: center;
+      }
 
-        .bar-button {
-            width: 200px;
-            height: 40px;
-            margin-right: 10px;
-        }
+      input {
+        margin-right: 15px;
+      }
 
-        .homeBar {
-            width: 100%;
-            position: absolute;
-            background: rgb(173, 179, 230);
-            top: 0px;
-            padding-bottom: 10px;
-            padding-top: 10px;
-            height: 40px;
-            display: flex;
-            justify-content: space-between;
-            align-items: center;
-            box-shadow: 0px -4px 3px rgb(230, 236, 238);
-        }
+      .bar-button {
+        width: 200px;
+        height: 40px;
+        margin-right: 10px;
+      }
+
+      .homeBar {
+        width: 100%;
+        position: absolute;
+        background: rgb(173, 179, 230);
+        top: 0px;
+        padding-bottom: 10px;
+        padding-top: 10px;
+        height: 40px;
+        display: flex;
+        justify-content: space-between;
+        align-items: center;
+        box-shadow: 0px -4px 3px rgb(230, 236, 238);
+      }
     </style>
-</head>
-<body>
-<div class="container text-dark mt-5">
-    <div class="row justify-content-md-center">
+  </head>
+  <body>
+    <div class="container text-dark mt-5">
+      <div class="row justify-content-md-center">
         <div class="col-md-5 p-3">
-            <h1>Welcome to Map Notes</h1>
+          <h1>Welcome to Map Notes</h1>
 
-            {% if user.is_authenticated %}
-                <p>Welcome, {{ user.username }} !</p>
-                <div id="map">
-                    <form
-                            id="submit-note-form"
-                            method="POST"
-                            action="{% url 'submit' %}"
-                            style="display: none"
-                    >
-                        {% csrf_token %}
-                        <input type="hidden" name="next" value="{{ request.path }}"/>
+          {% if user.is_authenticated %}
+          <p>Welcome, {{ user.username }} !</p>
+          <div id="weather"></div>
+          <div id="map">
+            <form
+              id="submit-note-form"
+              method="POST"
+              action="{% url 'submit' %}"
+              style="display: none"
+            >
+              {% csrf_token %}
+              <input type="hidden" name="next" value="{{ request.path }}" />
 
-                        <label style="margin-left: 15px" for="email">Email: </label>
-                        <input required type="text" id="email" name="email"/>
+              <label style="margin-left: 15px" for="email">Email: </label>
+              <input required type="text" id="email" name="email" />
 
-                        <label for="note">Note: </label>
-                        <input
-                                required
-                                type="text"
-                                id="note"
-                                name="note"
-                                style="flex-grow: 70"
-                        />
+              <label for="note">Note: </label>
+              <input
+                required
+                type="text"
+                id="note"
+                name="note"
+                style="flex-grow: 70"
+              />
 
-                        <label for="lat">Latitude:</label>
-                        <input required id="lat" name="lat" value="0" readonly/>
-                        <label for="lon">Longitude:</label>
-                        <input required id="lon" name="lon" value="0" readonly/>
+              <label for="lat">Latitude:</label>
+              <input required id="lat" name="lat" value="0" readonly />
+              <label for="lon">Longitude:</label>
+              <input required id="lon" name="lon" value="0" readonly />
 
-                        <input type="submit" value="Submit"/>
-                    </form>
-                </div>
-                <script>
-                    mapboxgl.accessToken =
-                        "pk.eyJ1IjoiamV0cGxhbmVqaiIsImEiOiJja3F2N2NkNXYwYm5tMnZtZmRoYWo2bTFkIn0.U-wRPuGZn0PixDOKKPxkLg";
-                    const map = new mapboxgl.Map({
-                        container: "map", // container ID
-                        style: "mapbox://styles/mapbox/streets-v11", // style URL
-                        center: [-15.5, 25.5], // starting position [lng, lat]
-                        zoom: 3, // starting zoom
-                    });
+              <input type="submit" value="Submit" />
+            </form>
+          </div>
+          <script>
+            const map2 = new Map();
+            map2.set(0, "clear");
+            map2.set(1, "cloudy");
+            map2.set(2, "cloudy");
+            map2.set(3, "cloudy");
+            map2.set(45, "foggy");
+            map2.set(48, "foggy");
+            map2.set(51, "raining");
+            map2.set(53, "raining");
+            map2.set(55, "raining");
+            map2.set(61, "raining");
+            map2.set(63, "raining");
+            map2.set(65, "raining");
+            map2.set(80, "raining");
+            map2.set(81, "raining");
+            map2.set(82, "raining");
+            map2.set(56, "sleeting");
+            map2.set(57, "sleeting");
+            map2.set(66, "sleeting");
+            map2.set(67, "sleeting");
+            map2.set(71, "snowing");
+            map2.set(73, "snowing");
+            map2.set(75, "snowing");
+            map2.set(77, "snowing");
+            map2.set(85, "snowing");
+            map2.set(86, "snowing");
+            map2.set(95, "thunderstorm");
+            map2.set(96, "thunderstorm");
+            map2.set(99, "thunderstorm");
 
-                    const canvas = map.getCanvasContainer();
-                    const geojson = {
-                        type: "FeatureCollection",
-                        features: [
-                            {
-                                type: "Feature",
-                                geometry: {
-                                    type: "Point",
-                                    coordinates: [0, 0],
-                                },
-                            },
-                        ],
-                    };
+            mapboxgl.accessToken =
+              "pk.eyJ1IjoiamV0cGxhbmVqaiIsImEiOiJja3F2N2NkNXYwYm5tMnZtZmRoYWo2bTFkIn0.U-wRPuGZn0PixDOKKPxkLg";
+            const map = new mapboxgl.Map({
+              container: "map", // container ID
+              style: "mapbox://styles/mapbox/streets-v11", // style URL
+              center: [-15.5, 25.5], // starting position [lng, lat]
+              zoom: 3, // starting zoom
+            });
 
-                    map.on("load", () => {
-                        var note_list = JSON.parse("{{latest_note_list|escapejs}}");
-                        console.log(note_list)
-                        for (let i = 0; i < note_list.length; i++) {
-                            fields = note_list[i].fields;
-                            coord = [fields.lon, fields.lat];
-                            const otherNotesPopup = new mapboxgl.Popup({
-                                closeOnClick: false,
-                                closeButton: false,
-                            })
-                                .setLngLat(coord)
-                                .setHTML(fields.date + ", " + fields.creator + " wrote: " + fields.body)
-                                .addTo(map);
-                        }
+            const canvas = map.getCanvasContainer();
+            const geojson = {
+              type: "FeatureCollection",
+              features: [
+                {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [0, 0],
+                  },
+                },
+              ],
+            };
 
-                        map.addSource("geojson", {
-                            type: "geojson",
-                            data: geojson,
-                        });
+            map.on("load", () => {
+              var note_list = JSON.parse("{{latest_note_list|escapejs}}");
+              console.log(note_list);
+              for (let i = 0; i < note_list.length; i++) {
+                fields = note_list[i].fields;
+                coord = [fields.lon, fields.lat];
+                const otherNotesPopup = new mapboxgl.Popup({
+                  closeOnClick: false,
+                  closeButton: false,
+                })
+                  .setLngLat(coord)
+                  .setHTML(
+                    fields.date +
+                      ", " +
+                      fields.creator +
+                      " wrote: " +
+                      fields.body
+                  )
+                  .addTo(map);
+              }
 
-                        map.on("click", (e) => {
-                            console.log(e);
-                            const point = {
-                                type: "Feature",
-                                geometry: {
-                                    type: "Point",
-                                    coordinates: [e.lngLat.lng, e.lngLat.lat],
-                                },
-                                properties: {
-                                    id: String(new Date().getTime()),
-                                },
-                            };
-                            const newNotePopup = new mapboxgl.Popup({closeOnClick: true})
-                                .setLngLat(point.geometry.coordinates)
-                                .setHTML("Create a Note here: ")
-                                .addTo(map);
-                            if (
-                                document.getElementsByClassName("mapboxgl-popup").length &&
-                                newNotePopup[0]
-                            ) {
-                                newNotePopup[0].remove();
-                            }
+              map.addSource("geojson", {
+                type: "geojson",
+                data: geojson,
+              });
 
-                            form = document.getElementById("submit-note-form");
-                            console.log(form.style.display);
-                            form.style.display = "flex";
+              map.on("click", (e) => {
+                console.log(e);
+                const point = {
+                  type: "Feature",
+                  geometry: {
+                    type: "Point",
+                    coordinates: [e.lngLat.lng, e.lngLat.lat],
+                  },
+                  properties: {
+                    id: String(new Date().getTime()),
+                  },
+                };
+                const newNotePopup = new mapboxgl.Popup({ closeOnClick: true })
+                  .setLngLat(point.geometry.coordinates)
+                  .setHTML("Create a Note here: ")
+                  .addTo(map);
+                if (
+                  document.getElementsByClassName("mapboxgl-popup").length &&
+                  newNotePopup[0]
+                ) {
+                  newNotePopup[0].remove();
+                }
 
-                            newNotePopup.on("close", (e) => {
-                                form.style.display = "none";
-                            });
+                const weatherAPI = new URL(
+                  "https://api.open-meteo.com/v1/forecast"
+                );
+                const requestOptions = {
+                  method: "GET",
+                  headers: {},
+                  redirect: "follow",
+                  mode: "cors",
+                };
+                weatherAPI.searchParams.set(
+                  "latitude",
+                  e.lngLat.lat.toFixed(3)
+                );
+                weatherAPI.searchParams.set(
+                  "longitude",
+                  e.lngLat.lng.toFixed(3)
+                );
+                weatherAPI.searchParams.set("current_weather", "true");
+                weatherAPI.searchParams.set("temperature_unit", "fahrenheit");
+                const weather = document.getElementById("weather");
 
-                            map.getSource("geojson").setData(geojson);
+                let request = new XMLHttpRequest();
+                request.open("GET", weatherAPI);
+                request.send();
+                request.onload = () => {
+                  console.log(request);
+                  if (request.status === 200) {
+                    json = JSON.parse(request.response);
+                    curr_weather = json.current_weather;
+                    weather_type = curr_weather.weathercode;
+                    temp = curr_weather.temperature;
+                    weather.innerHTML =
+                      "It is currently " +
+                      temp +
+                      "°F and " +
+                      map2.get(weather_type);
+                  } else {
+                    weather.innerHTML = request.statusText;
+                  }
+                };
 
-                            document.getElementById("lat").value = e.lngLat.lat;
-                            document.getElementById("lon").value = e.lngLat.lng;
-                        });
-                    });
-                </script>
-                <script>
-                    const my_notes_button = document.querySelector("#download-my-notes");
-                    const all_notes_button = document.querySelector("#download-my-notes");
+                form = document.getElementById("submit-note-form");
+                console.log(form.style.display);
+                form.style.display = "flex";
 
-                    function downloadMyNotes() {
-                        let action = confirm("Are you sure you want download notes written by you?")
-                        if (action) {
-                            alert("~Downloading~");
-                        }
-                    }
+                newNotePopup.on("close", (e) => {
+                  form.style.display = "none";
+                  weather.style.display = "none";
+                });
 
-                    function downloadAllNotes() {
-                        let action = confirm("Are you sure you want download ALL notes on this map?")
-                        if (action) {
-                            alert("~Downloading~");
-                        }
-                    }
-                </script>
-                <div class="homeBar">
-                    <h1 style="margin-left: 10px">
-                        You are signed-in as: {{ user.username }}
-                    </h1>
-                    <a>
-                        <button id="download-my-notes" onclick="downloadMyNotes()" class="bar-button"><b>Download My
-                            Notes</b></button>
-                        <button id="download-all-notes" onclick="downloadAllNotes()" class="bar-button"><b>Download
-                            All Notes</b></button>
-                    </a>
-                    <a href="{% url 'logout' %}">
-                        <button class="bar-button"><b>Sign Out</b></button>
-                    </a>
-                </div>
-            {% else %}
-                <a href="{% url 'login' %}">
-                    <button class="bar-button"><b>Sign In</b></button>
-                </a>
-            {% endif %}
+                map.getSource("geojson").setData(geojson);
+
+                document.getElementById("lat").value = e.lngLat.lat;
+                document.getElementById("lon").value = e.lngLat.lng;
+                weather.style.display = "block";
+              });
+            });
+          </script>
+          <script>
+            const my_notes_button =
+              document.querySelector("#download-my-notes");
+            const all_notes_button =
+              document.querySelector("#download-my-notes");
+
+            function downloadMyNotes() {
+              let action = confirm(
+                "Are you sure you want download notes written by you?"
+              );
+              if (action) {
+                alert("~Downloading~");
+              }
+            }
+
+            function downloadAllNotes() {
+              let action = confirm(
+                "Are you sure you want download ALL notes on this map?"
+              );
+              if (action) {
+                alert("~Downloading~");
+              }
+            }
+          </script>
+          <div class="homeBar">
+            <h1 style="margin-left: 10px">
+              You are signed-in as: {{ user.username }}
+            </h1>
+            <a>
+              <button
+                id="download-my-notes"
+                onclick="downloadMyNotes()"
+                class="bar-button"
+              >
+                <b>Download My Notes</b>
+              </button>
+              <button
+                id="download-all-notes"
+                onclick="downloadAllNotes()"
+                class="bar-button"
+              >
+                <b>Download All Notes</b>
+              </button>
+            </a>
+            <a href="{% url 'logout' %}">
+              <button class="bar-button"><b>Sign Out</b></button>
+            </a>
+          </div>
+          {% else %}
+          <a href="{% url 'login' %}">
+            <button class="bar-button"><b>Sign In</b></button>
+          </a>
+          {% endif %}
         </div>
+      </div>
     </div>
-</div>
-</body>
+  </body>
 </html>
