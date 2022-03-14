@@ -126,6 +126,8 @@ This application uses PostgreSQL (SQL or relational database).
         - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
 
 ## Miscellaneous
+- Site ID: to check the list of sites, open a python shell and type: `from django.contrib.sites.models import Site`,
+then `sorted([(site.id,site.name) for site in Site.objects.all()])` to view a list of all sites with IDs and their names.
 
 ### Heroku
 
