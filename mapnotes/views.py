@@ -1,22 +1,22 @@
-import json
-from django.utils import timezone
-from django.shortcuts import render
-
-from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.conf import settings
+from django.contrib.auth.forms import AuthenticationForm
+from django.core.handlers.wsgi import WSGIRequest
 from django.core.serializers import serialize
+from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
+from django.shortcuts import render
 from django.template import loader
-from mapnotes.models import User, Note
-from django.contrib.auth.forms import UserCreationForm, AuthenticationForm
+from django.utils import timezone
 
-# Create your views here.
+from mapnotes.models import User, Note, Map
+from util.data_takeout import data_takeout_backend
+
 
 def index(request):  # shows the map interface and notes pinned at locations
-    # latest_note_list = Note.objects.order_by('-date')[:100]
-    latest_note_list = Note.objects.all()
-    latest_note_list = serialize('json', latest_note_list, 
-        fields=['id', 'creator', 'body', 'date', 'lat', 'lon', 'upvotes'])
-    # print(latest_note_list)
-    return render(request, 'mapnotes/index.html', {'latest_note_list': latest_note_list})
+    # notes = (User.objects.raw("SELECT * FROM mapnotes_note " +
+    #     "INNER JOIN mapnotes_user ON (mapnotes_note.creator_id = mapnotes_user._id);"))
+    notes = Note.objects.order_by('-date')[:100]
+    notes = serialize('json', notes)
+    return render(request, 'mapnotes/index.html', {'latest_note_list': notes})
 
 
 def feed(request):  # shows the 100 latest notes ordered by publication date
@@ -44,28 +44,80 @@ def submit(request):  # response to user POSTing a note
         form = request.POST
         print(form)
         u = None
+        # TODO: user can be created right after login now
         try:
             u = User.objects.get(email=request.POST['email'])
         except User.DoesNotExist:  # create a new user entry
             u = User(email=request.POST['email'])
             u.save()
         finally:
-            m = u.map_set.create(name='Some random map Here', description='Some Map Here')
-            m.note_set.create(body=request.POST['note'], date=timezone.now(), 
-                lat=request.POST['lat'], lon=request.POST['lon'])
-            next = request.POST.get('next', '/')
-            return HttpResponseRedirect(next)
+            try:
+                global_map = _get_global_map()
+            except Exception as _:
+                # TODO: better error handling
+                raise
+
+            global_map.note_set.create(body=request.POST['note'], date=timezone.now(), creator_id=u._id,
+                                       lat=request.POST['lat'], lon=request.POST['lon'])
+            next_ = request.POST.get('next', '/')
+            return HttpResponseRedirect(next_)
+
     else:
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
-def login_request(request): # process the login request
-        form = AuthenticationForm()
-        return render(request = request,
-                    template_name = "account/login.html",
-                    context={"form":form})
 
-def logout_request(request): # process the logout request
-        form = AuthenticationForm()
-        return render(request = request,
-                    template_name = "account/logout.html",
-                    context={"form":form})
+def data_takeout(request: WSGIRequest):
+    try:
+        global_map = _get_global_map()
+    except Exception as _:
+        # TODO: better error handling
+        raise
+
+    # author_id = request.POST["creator"]
+
+    # res, msg = data_takeout_backend(str(global_map._id), author_id)
+    res, msg = data_takeout_backend(str(global_map._id))
+    return JsonResponse({"success": res, "msg": msg})
+
+
+def login_request(request):  # process the login request
+    form = AuthenticationForm()
+    return render(request=request,
+                  template_name="account/login.html",
+                  context={"form": form})
+
+
+def logout_request(request):  # process the logout request
+    form = AuthenticationForm()
+    return render(request=request,
+                  template_name="account/logout.html",
+                  context={"form": form})
+
+
+def _get_global_map() -> Map:
+    """
+    A helper method to find global map created by superuser.
+
+    :return: Map object
+    :raises User.DoesNotExist: Superuser not found
+    :raises Map.DoesNotExist: Map not found
+    :raises Map.MultipleObjectsReturned: Too many map created by the superuser
+    """
+    try:
+        su = User.objects.get(email__exact=settings.DJANGO_SUPERUSER_EMAIL)
+        return Map.objects.get(creator_id__exact=su._id)
+    except User.DoesNotExist as e:
+        # Superuser account must exist
+        print(e)
+        raise
+    except Map.DoesNotExist as e:
+        # There should be one global map, created by superuser
+        print(e)
+        raise
+    except Map.MultipleObjectsReturned as e:
+        # There should be only one global map, created by superuser
+        print(e)
+        raise
+    except Exception as e:
+        print(e)
+        raise
