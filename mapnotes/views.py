@@ -15,6 +15,16 @@ from util.data_takeout import data_takeout_backend
 def index(request):  # shows the map interface and notes pinned at locations
     # notes = (User.objects.raw("SELECT * FROM mapnotes_note " +
     #     "INNER JOIN mapnotes_user ON (mapnotes_note.creator_id = mapnotes_user._id);"))
+    if request.user.is_authenticated: 
+        try: # make an account for the logged in user if not already
+            data = SocialAccount.objects.get(user=request.user).extra_data
+            uid = data.get('id')
+            name = data.get('name')
+            u = User(_id=uid, name=name)
+            u.save()
+        except Exception as e: # this will catch if user already exists
+            print(e)
+
     notes = Note.objects.order_by('-date')[:100]
     notes = serialize('json', notes)
     return render(request, 'mapnotes/index.html', {'latest_note_list': notes})
@@ -45,7 +55,6 @@ def submit(request):  # response to user POSTing a note
         form = request.POST
         print(form)
         u = None
-        # TODO: user can be created right after login now
         try:
             print()
             u = User.objects.get(_id__exact=settings.DJANGO_SUPERUSER_ID)
@@ -83,17 +92,9 @@ def data_takeout(request: WSGIRequest):
 
 def login_request(request):  # process the login request
     form = AuthenticationForm()
-    try:
-        data = SocialAccount.objects.get(user=request.user).extra_data
-        uid = data.get('id')
-        u = User(_id=uid)
-        u.save()
-    except Exception as e: # this will catch if user already exists
-        print(e)
     return render(request=request,
                   template_name="account/login.html",
                   context={"form": form})
-
 
 def logout_request(request):  # process the logout request
     form = AuthenticationForm()
