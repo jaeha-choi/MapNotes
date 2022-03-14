@@ -6,13 +6,11 @@ from django.db import models
 
 
 class User(models.Model):  # id field is added automatically
-    _id = models.UUIDField(
-        primary_key=True, default=uuid.uuid4, editable=False, unique=True)
+    _id = models.TextField(primary_key=True, default="", editable=False, unique=True)
     name = models.CharField(max_length=60)
-    email = models.TextField(max_length=320, default="")
 
     def __str__(self):  # toString()
-        return (self.name + " (" + self.email + ")")
+        return (self.name)
 
 class Map(models.Model):
     _id = models.UUIDField(
@@ -45,9 +43,6 @@ class Note(models.Model):
 
     def get_creator_name(self):
         return self.creator.name
-
-    def get_creator_email(self):
-        return self.creator.email
 
     # Returns true if note was published less than or equal to a day from now
     def was_published_recently(self):

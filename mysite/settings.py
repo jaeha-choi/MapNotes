@@ -27,7 +27,7 @@ PROJ_5_STORAGE_CONTAINER_NAME = "prog5"
 PROJ_5_STORAGE_DATA_TAKEOUT_CONTAINER_NAME = "prog5"
 PROJ_5_TAKEOUT_DIRECTORY = "takeout"
 
-DJANGO_SUPERUSER_EMAIL = os.getenv("DJANGO_SUPERUSER_EMAIL")
+DJANGO_SUPERUSER_ID = os.getenv("DJANGO_SUPERUSER_ID")
 DJANGO_SUPERUSER_USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
 
 PROJ_5_STORAGE_URL = os.getenv("PROJ_5_STORAGE_URL")
@@ -75,7 +75,7 @@ INSTALLED_APPS = [
     'allauth.socialaccount.providers.google',
 ]
 
-SITE_ID = 2
+SITE_ID = 3
 
 # Redirects to homepage on sucessful login
 LOGIN_REDIRECT_URL = "/"

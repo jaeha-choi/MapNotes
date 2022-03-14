@@ -1,5 +1,6 @@
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
+from allauth.socialaccount.models import SocialAccount
 from django.core.handlers.wsgi import WSGIRequest
 from django.core.serializers import serialize
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
@@ -46,10 +47,10 @@ def submit(request):  # response to user POSTing a note
         u = None
         # TODO: user can be created right after login now
         try:
-            u = User.objects.get(_id=request.POST['_id'])
-        except User.DoesNotExist:  # create a new user entry
-            u = User(_id=request.POST['_id'])
-            u.save()
+            print()
+            u = User.objects.get(_id__exact=settings.DJANGO_SUPERUSER_ID)
+        except User.DoesNotExist as e:  # create a new user entry
+            print(e)
         finally:
             try:
                 global_map = _get_global_map()
@@ -82,6 +83,13 @@ def data_takeout(request: WSGIRequest):
 
 def login_request(request):  # process the login request
     form = AuthenticationForm()
+    try:
+        data = SocialAccount.objects.get(user=request.user).extra_data
+        uid = data.get('id')
+        u = User(_id=uid)
+        u.save()
+    except Exception as e: # this will catch if user already exists
+        print(e)
     return render(request=request,
                   template_name="account/login.html",
                   context={"form": form})
@@ -104,7 +112,7 @@ def _get_global_map() -> Map:
     :raises Map.MultipleObjectsReturned: Too many map created by the superuser
     """
     try:
-        su = User.objects.get(email__exact=settings.DJANGO_SUPERUSER_EMAIL)
+        su = User.objects.get(_id__exact=settings.DJANGO_SUPERUSER_ID)
         return Map.objects.get(creator_id__exact=su._id)
     except User.DoesNotExist as e:
         # Superuser account must exist

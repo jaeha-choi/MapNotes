@@ -10,4 +10,4 @@ python manage.py createsuperuser --noinput || true
 python manage.py init
 #python manage.py uploadstatic --insecure
 
-python manage.py runserver 0.0.0.0:8080
+python manage.py runserver 0.0.0.0:8000

@@ -12,10 +12,10 @@ class Command(BaseCommand):
 
     def handle(self, *args, **options):
         try:
-            u = User.objects.get(email=settings.DJANGO_SUPERUSER_EMAIL)
+            u = User.objects.get(_id=settings.DJANGO_SUPERUSER_ID)
         except User.DoesNotExist:
             print("Creating superuser for mapnotes")
-            u = User(name=settings.DJANGO_SUPERUSER_USERNAME, email=settings.DJANGO_SUPERUSER_EMAIL)
+            u = User(_id=settings.DJANGO_SUPERUSER_ID, name=settings.DJANGO_SUPERUSER_USERNAME)
             u.save()
 
         try:

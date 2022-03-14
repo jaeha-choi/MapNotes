@@ -94,8 +94,8 @@
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.path }}" />
 
-              <label style="margin-left: 15px" for="email">Email: </label>
-              <input required type="text" id="email" name="email" />
+              <label style="margin-left: 15px;" for="_id"></label>
+              <input required type="hidden" value={{user.socialaccount_set.all.0.uid}} id="_id" name="_id" readonly/>
 
               <label for="note">Note: </label>
               <input
@@ -286,6 +286,7 @@
                 "Are you sure you want download notes written by you?"
               );
               if (action) {
+
                 alert("~Downloading~");
               }
             }
@@ -294,9 +295,6 @@
               let action = confirm(
                 "Are you sure you want download ALL notes on this map?"
               );
-              if (action) {
-                alert("~Downloading~");
-              }
             }
           </script>
           <div class="homeBar">
@@ -311,13 +309,15 @@
               >
                 <b>Download My Notes</b>
               </button>
-              <button
-                id="download-all-notes"
-                onclick="downloadAllNotes()"
-                class="bar-button"
-              >
-                <b>Download All Notes</b>
-              </button>
+
+                <!-- {% csrf_token %} -->
+                <button
+                  id="download-all-notes"
+                  onclick="downloadAllNotes()"
+                  class="bar-button"
+                >
+                  <b>Download All Notes</b>
+                </button>
             </a>
             <a href="{% url 'logout' %}">
               <button class="bar-button"><b>Sign Out</b></button>
