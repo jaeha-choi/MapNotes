@@ -119,7 +119,6 @@
           </p>
           </div>
           {% if user.is_authenticated %}
-          <p>Welcome, {{ user.username }} !</p>
           <div id="weather"></div>
           <div id="map">
             <form
@@ -216,7 +215,7 @@
               var note_list = JSON.parse("{{latest_note_list|escapejs}}");
               console.log(note_list);
               for (let i = 0; i < note_list.length; i++) {
-                fields = note_list[i].fields;
+                fields = note_list[i];
                 coord = [fields.lon, fields.lat];
                 const otherNotesPopup = new mapboxgl.Popup({
                   closeOnClick: false,
@@ -226,7 +225,7 @@
                   .setHTML(
                     fields.date +
                       ", " +
-                      fields.creator +
+                      fields.creator_name +
                       " wrote: " +
                       fields.body
                   )

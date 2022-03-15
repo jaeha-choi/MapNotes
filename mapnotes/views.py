@@ -2,7 +2,6 @@ from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
 from allauth.socialaccount.models import SocialAccount
 from django.core.handlers.wsgi import WSGIRequest
-from django.core.serializers import serialize
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template import loader
@@ -10,11 +9,12 @@ from django.utils import timezone
 
 from mapnotes.models import User, Note, Map
 from util.data_takeout import data_takeout_backend
+from django.db.models import F
+import json
+from django.core.serializers.json import DjangoJSONEncoder
 
-
+#------------------------------------- Displaying Pages -------------------------------------#
 def index(request):  # shows the map interface and notes pinned at locations
-    # notes = (User.objects.raw("SELECT * FROM mapnotes_note " +
-    #     "INNER JOIN mapnotes_user ON (mapnotes_note.creator_id = mapnotes_user._id);"))
     if request.user.is_authenticated: 
         try: # make an account for the logged in user if not already
             data = SocialAccount.objects.get(user=request.user).extra_data
@@ -26,7 +26,17 @@ def index(request):  # shows the map interface and notes pinned at locations
             print(e)
 
     notes = Note.objects.order_by('-date')[:100]
-    notes = serialize('json', notes)
+    notes = Note.objects.filter().values('_id', 'creator', 'map_container', 'body', 
+        'date', 'upvotes', 'lat', 'lon', creator_name=F('creator__name'))
+    notes = list(notes)
+
+    for n in notes:
+        n['_id'] = str(n['_id'])
+        n['map_container'] = str(n['map_container'])
+        n['lat'] = str(n['lat'])
+        n['lon'] = str(n['lon'])
+
+    notes = json.dumps(notes, cls=DjangoJSONEncoder)
     return render(request, 'mapnotes/index.html', {'latest_note_list': notes})
 
 
@@ -50,10 +60,9 @@ def profile(request, user_id):  # simple page showing user details
     return render(request, 'mapnotes/user.html', {'user': user})
 
 
-def submit(request):  # response to user POSTing a note
+#------------------------------------- POST requests -------------------------------------#
+def submitNote(request):  # response to user POSTing a note
     if request.method == "POST":
-        form = request.POST
-        print(form)
         u = None
         try:
             if request.user.is_authenticated: 
@@ -79,6 +88,7 @@ def submit(request):  # response to user POSTing a note
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
 
+# Download notes by EVERY user
 def data_takeout_all(request: WSGIRequest):
     try:
         global_map = _get_global_map()
@@ -88,6 +98,7 @@ def data_takeout_all(request: WSGIRequest):
     return JsonResponse({"success": res, "msg": msg})
 
 
+# Download notes only created by current signed in user
 def data_takeout_user(request: WSGIRequest):
     try:
         global_map = _get_global_map()
