@@ -218,13 +218,18 @@
 
                     map.on("load", () => {
                         var note_list = JSON.parse("{{latest_note_list|escapejs}}");
-                        console.log(note_list);
+                        const csrfToken = getCookie('csrftoken');
                         for (let i = 0; i < note_list.length; i++) {
                             fields = note_list[i];
                             coord = [fields.lon, fields.lat];
+                            let showCloseButton = false;
+                            if ("{{ user.socialaccount_set.all.0.uid }}" === fields.creator) {
+                                showCloseButton = true;
+                            }
+                            {# If im the creator, show close button #}
                             const otherNotesPopup = new mapboxgl.Popup({
                                 closeOnClick: false,
-                                closeButton: false,
+                                closeButton: showCloseButton,
                             })
                                 .setLngLat(coord)
                                 .setHTML(
@@ -235,6 +240,37 @@
                                     fields.body
                                 )
                                 .addTo(map);
+                            if (showCloseButton) {
+                                otherNotesPopup.on('close', function () {
+                                    if (!confirm("Do you want to delete this message?")) {
+                                        otherNotesPopup.addTo(map);
+                                        return
+                                    }
+                                    fetch("/delete", {
+                                        method: "POST",
+                                        headers: {
+                                            "X-CSRFToken": csrfToken,
+                                            "Content-Type": "application/json",
+                                        },
+                                        body: JSON.stringify({"note_id": fields._id}),
+                                        credentials: "same-origin",
+                                    })
+                                        .then(function (response) {
+                                            return response.json();
+                                        })
+                                        .then(function (j) {
+                                            if (!j["success"]) {
+                                                alert("Error message: " + j["msg"]);
+                                                otherNotesPopup.addTo(map);
+                                            }
+                                        })
+                                        .catch(function (err) {
+                                            console.log("error while deleting a note: ", err);
+                                            otherNotesPopup.addTo(map);
+                                        })
+                                });
+                            }
+
                         }
 
                         map.addSource("geojson", {
@@ -322,6 +358,23 @@
                             weather.style.display = "block";
                         });
                     });
+
+                    function getCookie(name) {
+                        {# https://docs.djangoproject.com/en/dev/ref/csrf/#ajax #}
+                        let cookieValue = null;
+                        if (document.cookie && document.cookie !== '') {
+                            const cookies = document.cookie.split(';');
+                            for (let i = 0; i < cookies.length; i++) {
+                                const cookie = cookies[i].trim();
+                                // Does this cookie string begin with the name we want?
+                                if (cookie.substring(0, name.length + 1) === (name + '=')) {
+                                    cookieValue = decodeURIComponent(cookie.substring(name.length + 1));
+                                    break;
+                                }
+                            }
+                        }
+                        return cookieValue;
+                    }
                 </script>
                 <script>
                     const my_notes_button =

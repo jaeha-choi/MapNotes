@@ -7,6 +7,7 @@ from . import views
 urlpatterns = [
     path('', views.index, name='index'),
     path('feed', views.feed, name='feed'),
+    path('delete', views.delete, name='delete'),
     path('api/data-takeout/all', views.data_takeout_all, name='api/data-takeout/all'),
     path('api/data-takeout/my-notes', views.data_takeout_user, name='api/data-takeout/my-notes'),
     path('user/<int:user_id>/', views.profile, name='profile'),

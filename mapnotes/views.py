@@ -1,7 +1,11 @@
+import json
+
+from allauth.socialaccount.models import SocialAccount
 from django.conf import settings
 from django.contrib.auth.forms import AuthenticationForm
-from allauth.socialaccount.models import SocialAccount
 from django.core.handlers.wsgi import WSGIRequest
+from django.core.serializers.json import DjangoJSONEncoder
+from django.db.models import F
 from django.http import Http404, HttpResponse, HttpResponseRedirect, JsonResponse
 from django.shortcuts import render
 from django.template import loader
@@ -9,25 +13,22 @@ from django.utils import timezone
 
 from mapnotes.models import User, Note, Map
 from util.data_takeout import data_takeout_backend
-from django.db.models import F
-import json
-from django.core.serializers.json import DjangoJSONEncoder
 
-#------------------------------------- Displaying Pages -------------------------------------#
+
+# ------------------------------------- Displaying Pages -------------------------------------#
 def index(request):  # shows the map interface and notes pinned at locations
-    if request.user.is_authenticated: 
-        try: # make an account for the logged in user if not already
+    if request.user.is_authenticated:
+        try:  # make an account for the logged in user if not already
             data = SocialAccount.objects.get(user=request.user).extra_data
             uid = data.get('id')
             name = data.get('name')
             u = User(_id=uid, name=name)
             u.save()
-        except Exception as e: # this will catch if user already exists
+        except Exception as e:  # this will catch if user already exists
             print(e)
 
-    notes = Note.objects.order_by('-date')[:100]
-    notes = Note.objects.filter().values('_id', 'creator', 'map_container', 'body', 
-        'date', 'upvotes', 'lat', 'lon', creator_name=F('creator__name'))
+    notes = Note.objects.filter().values('_id', 'creator', 'map_container', 'body',
+                                         'date', 'upvotes', 'lat', 'lon', creator_name=F('creator__name'))
     notes = list(notes)
 
     for n in notes:
@@ -60,12 +61,12 @@ def profile(request, user_id):  # simple page showing user details
     return render(request, 'mapnotes/user.html', {'user': user})
 
 
-#------------------------------------- POST requests -------------------------------------#
+# ------------------------------------- POST requests -------------------------------------#
 def submitNote(request):  # response to user POSTing a note
     if request.method == "POST":
         u = None
         try:
-            if request.user.is_authenticated: 
+            if request.user.is_authenticated:
                 data = SocialAccount.objects.get(user=request.user).extra_data
                 uid = data.get('id')
                 u = User.objects.get(_id__exact=uid)
@@ -88,8 +89,46 @@ def submitNote(request):  # response to user POSTing a note
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
 
-# Download notes by EVERY user
-def data_takeout_all(request: WSGIRequest):
+def delete(request: WSGIRequest) -> JsonResponse:
+    """
+    Delete notes created by the author.
+
+    :param request: WSGIRequest request
+    :return: JsonResponse containing boolean value "success", and "msg".
+            If "success" is False, error message is returned in "msg"
+    """
+    res = False
+    # Default message
+    msg = "unknown error occurred"
+    try:
+        if request.user.is_authenticated:
+            data = SocialAccount.objects.get(user=request.user).extra_data
+            uid = data.get('id')
+
+            b = json.loads(request.body)
+            note = Note.objects.get(_id=b["note_id"])
+            if note.creator_id == uid or settings.DJANGO_SUPERUSER_ID == uid:
+                note.delete()
+                res = True
+                msg = "success"
+            else:
+                msg = "you can only delete your notes"
+        else:
+            msg = "Please login before downloading notes."
+    except Exception as e:
+        return JsonResponse({"success": res, "msg": str(e)})
+
+    return JsonResponse({"success": res, "msg": msg})
+
+
+def data_takeout_all(request: WSGIRequest) -> JsonResponse:
+    """
+    Download notes by EVERY user.
+
+    :param request: WSGIRequest request
+    :return: JsonResponse containing boolean value "success", and "msg".
+            If "success" is False, error message is returned in "msg"
+    """
     try:
         global_map = _get_global_map()
         res, msg = data_takeout_backend(str(global_map._id))
@@ -98,14 +137,19 @@ def data_takeout_all(request: WSGIRequest):
     return JsonResponse({"success": res, "msg": msg})
 
 
-# Download notes only created by current signed in user
 def data_takeout_user(request: WSGIRequest):
+    """
+    Download notes only created by current signed in user. Requires login.
+
+    :param request: WSGIRequest request
+    :return: JsonResponse containing boolean value "success", and "msg".
+            If "success" is False, error message is returned in "msg"
+    """
     try:
         global_map = _get_global_map()
-        if request.user.is_authenticated: 
+        if request.user.is_authenticated:
             data = SocialAccount.objects.get(user=request.user).extra_data
             uid = data.get('id')
-            u = User.objects.get(_id__exact=uid)
             res, msg = data_takeout_backend(str(global_map._id), uid)
         else:
             return JsonResponse({"success": 'false', "msg": "Please login before downloading notes."})
@@ -114,11 +158,13 @@ def data_takeout_user(request: WSGIRequest):
 
     return JsonResponse({"success": res, "msg": msg})
 
+
 def login_request(request):  # process the login request
     form = AuthenticationForm()
     return render(request=request,
                   template_name="account/login.html",
                   context={"form": form})
+
 
 def logout_request(request):  # process the logout request
     form = AuthenticationForm()
