@@ -56,16 +56,19 @@ def submit(request):  # response to user POSTing a note
         print(form)
         u = None
         try:
-            print()
-            u = User.objects.get(_id__exact=settings.DJANGO_SUPERUSER_ID)
+            if request.user.is_authenticated: 
+                data = SocialAccount.objects.get(user=request.user).extra_data
+                uid = data.get('id')
+                u = User.objects.get(_id__exact=uid)
+            else:
+                raise Exception('User must be signed in to post notes')
         except User.DoesNotExist as e:  # create a new user entry
             print(e)
         finally:
             try:
                 global_map = _get_global_map()
             except Exception as _:
-                # TODO: better error handling
-                raise
+                raise Exception('Could not load the public map.')
 
             global_map.note_set.create(body=request.POST['note'], date=timezone.now(), creator_id=u._id,
                                        lat=request.POST['lat'], lon=request.POST['lon'])
@@ -76,19 +79,29 @@ def submit(request):  # response to user POSTing a note
         return JsonResponse({'error': 'Please fill out all parts of the form'}, status=400)
 
 
-def data_takeout(request: WSGIRequest):
+def data_takeout_all(request: WSGIRequest):
     try:
         global_map = _get_global_map()
-    except Exception as _:
-        # TODO: better error handling
-        raise
-
-    # author_id = request.POST["creator"]
-
-    # res, msg = data_takeout_backend(str(global_map._id), author_id)
-    res, msg = data_takeout_backend(str(global_map._id))
+        res, msg = data_takeout_backend(str(global_map._id))
+    except Exception as e:
+        return JsonResponse({"success": 'false', "msg": str(e)})
     return JsonResponse({"success": res, "msg": msg})
 
+
+def data_takeout_user(request: WSGIRequest):
+    try:
+        global_map = _get_global_map()
+        if request.user.is_authenticated: 
+            data = SocialAccount.objects.get(user=request.user).extra_data
+            uid = data.get('id')
+            u = User.objects.get(_id__exact=uid)
+            res, msg = data_takeout_backend(str(global_map._id), uid)
+        else:
+            return JsonResponse({"success": 'false', "msg": "Please login before downloading notes."})
+    except Exception as e:
+        return JsonResponse({"success": 'false', "msg": str(e)})
+
+    return JsonResponse({"success": res, "msg": msg})
 
 def login_request(request):  # process the login request
     form = AuthenticationForm()

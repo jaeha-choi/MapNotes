@@ -39,7 +39,7 @@
         background-color: white;
       }
 
-      form {
+      #submit-note-form {
         position: absolute;
         bottom: 0px;
         z-index: 5;
@@ -94,8 +94,15 @@
               {% csrf_token %}
               <input type="hidden" name="next" value="{{ request.path }}" />
 
-              <label style="margin-left: 15px;" for="_id"></label>
-              <input required type="hidden" value={{user.socialaccount_set.all.0.uid}} id="_id" name="_id" readonly/>
+              <label style="margin-left: 15px" for="_id"></label>
+              <input
+                required
+                type="hidden"
+                value="{{user.socialaccount_set.all.0.uid}}"
+                id="_id"
+                name="_id"
+                readonly
+              />
 
               <label for="note">Note: </label>
               <input
@@ -281,16 +288,6 @@
             const all_notes_button =
               document.querySelector("#download-my-notes");
 
-            function downloadMyNotes() {
-              let action = confirm(
-                "Are you sure you want download notes written by you?"
-              );
-              if (action) {
-
-                alert("~Downloading~");
-              }
-            }
-
             function downloadAllNotes() {
               let action = confirm(
                 "Are you sure you want download ALL notes on this map?"
@@ -301,24 +298,24 @@
             <h1 style="margin-left: 10px">
               You are signed-in as: {{ user.username }}
             </h1>
-            <a>
-              <button
-                id="download-my-notes"
-                onclick="downloadMyNotes()"
-                class="bar-button"
-              >
-                <b>Download My Notes</b>
-              </button>
+            <form
+              id="download-my-notes"
+              method="POST"
+              action="{% url 'api/data-takeout/my-notes' %}"
+            >
+              {% csrf_token %}
+              <input type="submit" value="Download my notes" />
+            </form>
 
-                <!-- {% csrf_token %} -->
-                <button
-                  id="download-all-notes"
-                  onclick="downloadAllNotes()"
-                  class="bar-button"
-                >
-                  <b>Download All Notes</b>
-                </button>
-            </a>
+            <form
+              id="download-all-notes"
+              method="POST"
+              action="{% url 'api/data-takeout/all' %}"
+            >
+              {% csrf_token %}
+              <input type="submit" value="Download all notes" />
+            </form>
+
             <a href="{% url 'logout' %}">
               <button class="bar-button"><b>Sign Out</b></button>
             </a>

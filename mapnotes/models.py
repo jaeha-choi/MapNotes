@@ -6,7 +6,7 @@ from django.db import models
 
 
 class User(models.Model):  # id field is added automatically
-    _id = models.TextField(primary_key=True, default="", editable=False, unique=True)
+    _id = models.TextField(primary_key=True, editable=False, unique=True)
     name = models.CharField(max_length=60)
 
     def __str__(self):  # toString()
