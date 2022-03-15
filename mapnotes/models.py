@@ -10,7 +10,8 @@ class User(models.Model):  # id field is added automatically
     name = models.CharField(max_length=60)
 
     def __str__(self):  # toString()
-        return (self.name)
+        return self.name
+
 
 class Map(models.Model):
     _id = models.UUIDField(
@@ -21,7 +22,7 @@ class Map(models.Model):
     description = models.CharField(max_length=50)
 
     def __str__(self):
-        return ('Map: {0}, Description: {1}'.format(self.name, self.description))
+        return 'Map: {0}, Description: {1}'.format(self.name, self.description)
 
 
 class Note(models.Model):
