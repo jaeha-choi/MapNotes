@@ -33,6 +33,16 @@ DJANGO_SUPERUSER_USERNAME = os.getenv("DJANGO_SUPERUSER_USERNAME")
 PROJ_5_STORAGE_URL = os.getenv("PROJ_5_STORAGE_URL")
 PROJ_5_STORAGE_CREDENTIAL_KEY = os.getenv("PROJ_5_STORAGE_CREDENTIAL_KEY")
 
+# For Google authentication API
+SOCIALACCOUNT_PROVIDERS = {
+    "google": {
+        "APP": {
+            "client_id": os.getenv("PROJ_5_GOOGLE_AUTH_CLIENT_ID"),
+            "secret": os.getenv("PROJ_5_GOOGLE_AUTH_SECRET_KEY"),
+        }
+    }
+}
+
 # Build paths inside the project like this: BASE_DIR / 'subdir'.
 BASE_DIR = Path(__file__).resolve().parent.parent
 
