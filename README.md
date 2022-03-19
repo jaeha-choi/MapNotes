@@ -4,6 +4,8 @@
 
 README created by: Jay Lin
 
+Website URL: http://prog5.azurewebsites.net/
+
 ## Summary
 
 This is a Django (Python-based framework) application that provides a map view of notes saved around the world. Users
