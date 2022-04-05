@@ -4,7 +4,12 @@
 
 README created by: Jay Lin
 
+
 Website URL: http://prog5.azurewebsites.net/
+
+![Main page](./imgs/main.png)
+![pre login page](./imgs/prelogin.png)
+
 
 ## Summary
 
@@ -98,10 +103,10 @@ CSS436_Program_5
 ```
 
 ## Static files
-Django static files include images, CSS, and Javascript files. For easy deployment,
-they can be gathered into a single directory (project-wide) so they can be easily served.
-To do this and generate a staticfiles folder, specify STATIC_ROOT = "some_path" in settings.py,
-then run `python3 manage.py collectstatic`.
+
+Django static files include images, CSS, and Javascript files. For easy deployment, they can be gathered into a single
+directory (project-wide) so they can be easily served. To do this and generate a staticfiles folder, specify STATIC_ROOT
+= "some_path" in settings.py, then run `python3 manage.py collectstatic`.
 
 ## Database Management
 
@@ -121,15 +126,17 @@ This application uses PostgreSQL (SQL or relational database).
         - Install azure-cli via command line (ex: `brew install azure-cli`)
         - Login with your account using `az login`
         -
-        Type: `az postgres flexible-server connect -n postgresdemoserver -u dbuser -p "dbpassword" -d flexibleserverdb --interactive`
-        Source: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/connect-azure-cli
-            - This will start an interactive session in the Azure PostgreSQL server
-        - DROP DATABASE notes; CREATE DATABASE notes;
-        - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
+      Type: `az postgres flexible-server connect -n postgresdemoserver -u dbuser -p "dbpassword" -d flexibleserverdb --interactive`
+      Source: https://docs.microsoft.com/en-us/azure/postgresql/flexible-server/connect-azure-cli
+        - This will start an interactive session in the Azure PostgreSQL server
+            - DROP DATABASE notes; CREATE DATABASE notes;
+            - Go back to your application and do python3 manage.py migrate. This will push the schema changes to Azure.
 
 ## Miscellaneous
+
 - Site ID: to check the list of sites, open a python shell and type: `from django.contrib.sites.models import Site`,
-then `sorted([(site.id,site.name) for site in Site.objects.all()])` to view a list of all sites with IDs and their names.
+  then `sorted([(site.id,site.name) for site in Site.objects.all()])` to view a list of all sites with IDs and their
+  names.
 
 ### Heroku
 
